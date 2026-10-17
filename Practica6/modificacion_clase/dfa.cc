@@ -10,9 +10,9 @@
 
 #include "dfa.h"
 
-#include <cctype>
 #include <fstream>
 #include <iomanip>
+#include <regex> 
 #include <sstream>
 
 DFA::DFA() : initial_state_identifier_(-1) {}
@@ -25,12 +25,11 @@ bool DFA::LoadFromFile(const std::string& filename) {
   }
 
   std::string line;
+  const std::regex kCommentOrEmptyRegex(R"(^\s*(?://.*)?$)");
 
-  auto ReadNextLine = [&input_file, &line]() -> bool {
+  auto ReadNextLine = [&input_file, &line, &kCommentOrEmptyRegex]() -> bool {
     while (std::getline(input_file, line)) {
-      if (line.empty()) continue;
-      size_t first_char = line.find_first_not_of(" \t");
-      if (first_char != std::string::npos && line.compare(first_char, 2, "//") == 0) {
+      if (std::regex_match(line, kCommentOrEmptyRegex)) {
         continue;
       }
       return true;
@@ -38,45 +37,62 @@ bool DFA::LoadFromFile(const std::string& filename) {
     return false;
   };
 
-  if (!ReadNextLine()) {
-    return false;
-  }
+  if (!ReadNextLine()) return false;
   alphabet_.clear();
+  const std::regex kSymbolRegex(R"([a-zA-Z0-9])");
   for (char symbol : line) {
-    if (!std::isspace(symbol)) {
+    std::string symbol_str(1, symbol);
+    if (std::regex_match(symbol_str, kSymbolRegex)) {
       alphabet_.insert(symbol);
     }
   }
 
-  if (!ReadNextLine()) {
+  if (!ReadNextLine()) return false;
+  const std::regex kNumberRegex(R"(^\s*(\d+)\s*$)");
+  std::smatch match;
+  if (!std::regex_match(line, match, kNumberRegex)) {
+    std::cerr << "Error: Número total de estados inválido." << std::endl;
     return false;
   }
-  int number_of_states = std::stoi(line);
+  int number_of_states = std::stoi(match[1].str());
 
-  if (!ReadNextLine()) {
+  if (!ReadNextLine()) return false;
+  if (!std::regex_match(line, match, kNumberRegex)) {
+    std::cerr << "Error: Estado inicial inválido." << std::endl;
     return false;
   }
-  initial_state_identifier_ = std::stoi(line);
+  initial_state_identifier_ = std::stoi(match[1].str());
 
   states_.clear();
+  const std::regex kStateHeaderRegex(R"(^\s*(\d+)\s+([01])(?:\s+(.*))?$)");
+  const std::regex kTransitionPairRegex(R"((\S)\s+(\d+))");
+
   for (int i = 0; i < number_of_states; ++i) {
     if (!ReadNextLine()) {
       std::cerr << "Error: El fichero finalizó antes de leer todos los estados." << std::endl;
       return false;
     }
 
-    std::stringstream string_stream(line);
-    int state_id, is_accepting_int;
-    if (!(string_stream >> state_id >> is_accepting_int)) {
+    std::smatch header_match;
+    if (!std::regex_match(line, header_match, kStateHeaderRegex)) {
       std::cerr << "Error: Formato de línea de estado inválido." << std::endl;
       return false;
     }
 
-    State current_state(state_id, is_accepting_int == 1);
+    int state_id = std::stoi(header_match[1].str());
+    bool is_accepting = (header_match[2].str() == "1");
 
-    char transition_symbol;
-    int destination_state_id;
-    while (string_stream >> transition_symbol >> destination_state_id) {
+    State current_state(state_id, is_accepting);
+
+    std::string transitions_part = header_match[3].str();
+    auto transitions_begin = std::sregex_iterator(transitions_part.begin(), transitions_part.end(), kTransitionPairRegex);
+    auto transitions_end = std::sregex_iterator();
+
+    for (std::sregex_iterator iter = transitions_begin; iter != transitions_end; ++iter) {
+      std::smatch trans_match = *iter;
+      char transition_symbol = trans_match[1].str()[0];
+      int destination_state_id = std::stoi(trans_match[2].str());
+
       if (alphabet_.find(transition_symbol) == alphabet_.end()) {
         std::cerr << "Error: El símbolo '" << transition_symbol << "' no pertenece al alfabeto en el estado " << state_id << "." << std::endl;
         return false;
