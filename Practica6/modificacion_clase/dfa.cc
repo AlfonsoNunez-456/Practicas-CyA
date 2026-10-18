@@ -80,8 +80,13 @@ bool DFA::LoadFromFile(const std::string& filename) {
     }
 
     int state_id = std::stoi(header_match[1].str());
-    bool is_accepting = (header_match[2].str() == "1");
 
+    if (states_.find(state_id) != states_.end()) {
+      std::cerr << "Error: El estado con ID " << state_id << " está duplicado en la definición del DFA." << std::endl;
+      return false;
+    }
+
+    bool is_accepting = (header_match[2].str() == "1");
     State current_state(state_id, is_accepting);
 
     std::string transitions_part = header_match[3].str();
