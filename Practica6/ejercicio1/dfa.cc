@@ -81,7 +81,7 @@ bool DFA::LoadFromFile(const std::string& filename) {
 
     int state_id = std::stoi(header_match[1].str());
 
-  if (states_.find(state_id) != states_.end()) {
+    if (states_.find(state_id) != states_.end()) {
       std::cerr << "Error: El estado con ID " << state_id << " está duplicado en la definición del DFA." << std::endl;
       return false;
     }
