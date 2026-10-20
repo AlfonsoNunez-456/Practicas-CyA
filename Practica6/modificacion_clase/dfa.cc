@@ -149,12 +149,18 @@ bool DFA::SimulateString(const std::string& input_string, std::ostream& output_s
 
     const State& current_state = states_.at(current_state_id);
     if (!current_state.HasTransition(symbol)) {
-      output_stream << "Sin transición definida." << std::endl;
+      output_stream << "Error a la hora de realizar la transición. " << std::endl;
       output_stream << "Cadena de entrada RECHAZADA.\n" << std::endl;
       return false;
     }
 
     int next_state_id = current_state.GetNextState(symbol);
+    int state_id = current_state.identifier();
+    if (state_id == next_state_id) {
+      output_stream << "Se ha alcanzado un estado de absorción.\n";
+      output_stream << "Cadena de entrada RECHAZADA. \n" << std::endl;
+      return false;
+    }
 
     output_stream << std::left << std::setw(15) << current_state_id << std::setw(15) << symbol << std::setw(15) << next_state_id << std::endl;
 
