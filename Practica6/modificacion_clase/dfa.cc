@@ -156,7 +156,7 @@ bool DFA::SimulateString(const std::string& input_string, std::ostream& output_s
 
     int next_state_id = current_state.GetNextState(symbol);
     int state_id = current_state.identifier();
-    if (state_id == next_state_id) {
+    if (state_id == next_state_id && !current_state.is_accepting()) {
       output_stream << "Se ha alcanzado un estado de absorción.\n";
       output_stream << "Cadena de entrada RECHAZADA. \n" << std::endl;
       return false;
