@@ -1,0 +1,7 @@
+// DFA que reconoce el lenguaje representado por la expresión a*b(a|b)+
+a b
+3
+0
+0 0 2 a 0 b 1
+1 0 2 a 2 b 2
+2 1 2 a 2 b 2
