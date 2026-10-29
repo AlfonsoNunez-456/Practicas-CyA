@@ -31,19 +31,22 @@ bool Grammar::ExportToFile(const std::string& filename) const {
     return false;
   }
 
-  output_file << terminals_.size() << "\n";
+  output_file << "Número de terminales: " << terminals_.size() << "\n";
+  output_file << "Terminales:\n";
   for (char symbol : terminals_) {
     output_file << symbol << "\n";
   }
 
-  output_file << non_terminals_.size() << "\n";
+  output_file << "Número de no terminales: " << non_terminals_.size() << "\n";
+  output_file << "No terminales:\n";
   for (const auto& symbol : non_terminals_) {
     output_file << symbol << "\n";
   }
 
-  output_file << start_symbol_ << "\n";
+  output_file << "Símbolo incial: " << start_symbol_ << "\n";
 
-  output_file << productions_.size() << "\n";
+  output_file << "Número de normas de producción: " << productions_.size() << "\n";
+  output_file << "Normas de producción:\n";
   for (const auto& production : productions_) {
     output_file << production.left() << " -> " << production.right() << "\n";
   }

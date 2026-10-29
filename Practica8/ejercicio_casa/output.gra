@@ -1,12 +1,15 @@
-2
+Número de terminales: 2
+Terminales:
 a
 b
-3
+Número de no terminales: 3
+No terminales:
 S0
 S1
 S2
-S0
-7
+Símbolo incial: S0
+Número de normas de producción: 7
+Normas de producción:
 S0 -> aS0
 S0 -> bS1
 S1 -> aS2
