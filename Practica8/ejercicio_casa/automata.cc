@@ -13,7 +13,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <regex>  // NOLINT
+#include <regex>  
 #include <sstream>
 
 Automata::Automata() : initial_state_identifier_(-1) {}
