@@ -57,20 +57,20 @@ int main(int argc, char* argv[]) {
     grammar_filename = arg1;
   } else {
     std::cerr << "Error: Se debe proporcionar un fichero con extensión .dfa y un fichero con extensión .gra." << std::endl;
-    return 1;
+    return 2;
   }
 
   Automata dfa_simulator;
   if (!dfa_simulator.LoadFromFile(dfa_filename)) {
     std::cerr << "Error al cargar la especificación del DFA." << std::endl;
-    return 1;
+    return 3;
   }
 
   Grammar generated_grammar = dfa_simulator.ConvertToGrammar();
 
   if (!generated_grammar.ExportToFile(grammar_filename)) {
     std::cerr << "Error al guardar el fichero de la gramática." << std::endl;
-    return 1;
+    return 4;
   }
 
   std::cout << "Gramática regular generada con éxito en: " << grammar_filename << std::endl;
