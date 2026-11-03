@@ -31,7 +31,7 @@ class Grammar {
           const std::string& start_symbol,
           const std::vector<Production>& productions);
 
-  bool ExportToFile(const std::string& filename) const;
+  bool ExportToFile(const std::string& filename, bool use_other_format = false) const;
 
  private:
   std::set<char> terminals_;

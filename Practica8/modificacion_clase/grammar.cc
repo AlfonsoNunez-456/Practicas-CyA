@@ -12,6 +12,7 @@
 #include "grammar.h"
 
 #include <fstream>
+#include <map>
 
 Grammar::Grammar() : start_symbol_("") {}
 
@@ -24,31 +25,54 @@ Grammar::Grammar(const std::set<char>& terminals,
       start_symbol_(start_symbol),
       productions_(productions) {}
 
-bool Grammar::ExportToFile(const std::string& filename) const {
+bool Grammar::ExportToFile(const std::string& filename, bool use_alternative_format) const {
   std::ofstream output_file(filename);
   if (!output_file.is_open()) {
     std::cerr << "Error: No se pudo crear el fichero de salida " << filename << std::endl;
     return false;
   }
 
-  output_file << "Número de terminales: " << terminals_.size() << "\n";
-  output_file << "Terminales:\n";
+  output_file << terminals_.size() << "\n";
   for (char symbol : terminals_) {
     output_file << symbol << "\n";
   }
 
-  output_file << "Número de no terminales: " << non_terminals_.size() << "\n";
-  output_file << "No terminales:\n";
+  output_file << non_terminals_.size() << "\n";
   for (const auto& symbol : non_terminals_) {
     output_file << symbol << "\n";
   }
 
-  output_file << "Símbolo incial: " << start_symbol_ << "\n";
+  output_file << start_symbol_ << "\n";
 
-  output_file << "Número de normas de producción: " << productions_.size() << "\n";
-  output_file << "Normas de producción:\n";
-  for (const auto& production : productions_) {
-    output_file << production.left() << " -> " << production.right() << "\n";
+  if (use_alternative_format) {
+    std::vector<std::string> order;
+    std::map<std::string, std::vector<std::string>> grouped_productions;
+
+    for (const auto& production : productions_) {
+      const std::string& left = production.left();
+      if (grouped_productions.find(left) == grouped_productions.end()) {
+        order.push_back(left);
+      }
+      grouped_productions[left].push_back(production.right());
+    }
+
+    output_file << grouped_productions.size() << "\n";
+    for (const auto& left : order) {
+      output_file << left << " -> ";
+      const auto& rights = grouped_productions[left];
+      for (size_t i = 0; i < rights.size(); ++i) {
+        output_file << rights[i];
+        if (i + 1 < rights.size()) {
+          output_file << " | ";
+        }
+      }
+      output_file << "\n";
+    }
+  } else {
+    output_file << productions_.size() << "\n";
+    for (const auto& production : productions_) {
+      output_file << production.left() << " -> " << production.right() << "\n";
+    }
   }
 
   return true;
